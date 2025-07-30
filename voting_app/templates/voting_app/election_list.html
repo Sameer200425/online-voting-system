@@ -1,0 +1,129 @@
+<!-- cspell:ignore elif truncatewords endfor -->
+{% extends 'voting_app/base.html' %}
+
+{% block title %}Elections - Online Voting System{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>
+                    <i class="fas fa-list me-2"></i>
+                    All Elections
+                </h1>
+                {% if user.is_staff %}
+                    <a href="{% url 'create_election' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Create Election
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        {% for election in elections %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <h5 class="card-title">{{ election.title }}</h5>
+                            {% if election.is_ongoing %}
+                                <span class="badge bg-success">
+                                    <i class="fas fa-circle me-1"></i>LIVE
+                                </span>
+                            {% elif election.is_upcoming %}
+                                <span class="badge bg-warning text-dark">
+                                    <i class="fas fa-hourglass-half me-1"></i>UPCOMING
+                                </span>
+                            {% elif election.is_finished %}
+                                <span class="badge bg-secondary">
+                                    <i class="fas fa-check-circle me-1"></i>COMPLETED
+                                </span>
+                            {% endif %}
+                        </div>
+                        
+                        <p class="card-text text-muted">{{ election.description|truncatewords:20 }}</p>
+                        
+                        <div class="mb-3">
+                            <small class="text-muted">
+                                <i class="fas fa-calendar me-1"></i>
+                                {{ election.start_time|date:"M d, Y" }} - {{ election.end_time|date:"M d, Y" }}
+                            </small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <small class="text-muted">
+                                <i class="fas fa-users me-1"></i>
+                                {{ election.total_votes }} vote{{ election.total_votes|pluralize }} cast
+                            </small>
+                        </div>
+                        
+                        <div class="d-grid">
+                            {% if election.is_ongoing %}
+                                <a href="{% url 'election_detail' election.pk %}" class="btn btn-success">
+                                    <i class="fas fa-vote-yea me-2"></i>Vote Now
+                                </a>
+                            {% elif election.is_finished %}
+                                <a href="{% url 'election_results' election.pk %}" class="btn btn-info">
+                                    <i class="fas fa-chart-pie me-2"></i>View Results
+                                </a>
+                            {% else %}
+                                <a href="{% url 'election_detail' election.pk %}" class="btn btn-outline-primary">
+                                    <i class="fas fa-info-circle me-2"></i>View Details
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12">
+                <div class="text-center py-5">
+                    <i class="fas fa-inbox fa-4x text-muted mb-4"></i>
+                    <h3 class="text-muted">No Elections Available</h3>
+                    <p class="text-muted">
+                        There are currently no active elections. 
+                        {% if user.is_staff %}
+                            <a href="{% url 'create_election' %}" class="text-decoration-none">Create one now</a>
+                        {% else %}
+                            Check back later for upcoming elections.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+        <nav aria-label="Elections pagination" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1">First</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                    </li>
+                {% endif %}
+
+                <li class="page-item active">
+                    <span class="page-link">
+                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                    </span>
+                </li>
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+</div>
+{% endblock %}

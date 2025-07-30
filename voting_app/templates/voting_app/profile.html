@@ -1,0 +1,258 @@
+<!-- cspell:ignore truncatewords elif endfor rgba -->
+{% extends 'voting_app/base.html' %}
+
+{% block title %}My Profile - Online Voting System{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <!-- Profile Information -->
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-user me-2"></i>Profile Information
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.first_name.id_for_label }}" class="form-label">First Name</label>
+                                {{ form.first_name }}
+                                {% if form.first_name.errors %}
+                                    <div class="text-danger small">{{ form.first_name.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.last_name.id_for_label }}" class="form-label">Last Name</label>
+                                {{ form.last_name }}
+                                {% if form.last_name.errors %}
+                                    <div class="text-danger small">{{ form.last_name.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.email.id_for_label }}" class="form-label">Email Address</label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                                <div class="text-danger small">{{ form.email.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.phone_number.id_for_label }}" class="form-label">Phone Number</label>
+                                {{ form.phone_number }}
+                                {% if form.phone_number.errors %}
+                                    <div class="text-danger small">{{ form.phone_number.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.date_of_birth.id_for_label }}" class="form-label">Date of Birth</label>
+                                {{ form.date_of_birth }}
+                                {% if form.date_of_birth.errors %}
+                                    <div class="text-danger small">{{ form.date_of_birth.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Update Profile
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Summary -->
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-id-card me-2"></i>Account Summary
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center text-white mx-auto" 
+                             style="width: 80px; height: 80px;">
+                            <i class="fas fa-user fa-2x"></i>
+                        </div>
+                        <h5 class="mt-2">{{ user.get_full_name|default:user.username }}</h5>
+                        <p class="text-muted">@{{ user.username }}</p>
+                    </div>
+
+                    <div class="border-top pt-3">
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <div class="border-end">
+                                    <h5 class="text-primary">{{ user_profile.age }}</h5>
+                                    <small class="text-muted">Years Old</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <h5 class="text-success">{{ votes|length }}</h5>
+                                <small class="text-muted">Votes Cast</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border-top pt-3 mt-3">
+                        <p class="mb-1"><strong>Voter ID:</strong> {{ user_profile.voter_id }}</p>
+                        <p class="mb-1"><strong>Status:</strong> 
+                            {% if user_profile.is_eligible %}
+                                <span class="badge bg-success">Eligible</span>
+                            {% else %}
+                                <span class="badge bg-danger">Not Eligible</span>
+                            {% endif %}
+                        </p>
+                        <p class="mb-0"><strong>Member Since:</strong> {{ user_profile.created_at|date:"M d, Y" }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bolt me-2"></i>Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'election_list' %}" class="btn btn-primary">
+                            <i class="fas fa-vote-yea me-2"></i>View Elections
+                        </a>
+                        <a href="{% url 'home' %}" class="btn btn-success">
+                            <i class="fas fa-home me-2"></i>Go to Dashboard
+                        </a>
+                        <a href="{% url 'password_change' %}" class="btn btn-warning">
+                            <i class="fas fa-key me-2"></i>Change Password
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Voting History -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-history me-2"></i>Voting History
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {% if votes %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Election</th>
+                                        <th>Candidate Voted For</th>
+                                        <th>Party</th>
+                                        <th>Date & Time</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for vote in votes %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ vote.election.title }}</strong>
+                                                <br>
+                                                <small class="text-muted">{{ vote.election.description|truncatewords:8 }}</small>
+                                            </td>
+                                            <td>{{ vote.candidate.name }}</td>
+                                            <td>
+                                                {% if vote.candidate.party %}
+                                                    {{ vote.candidate.party }}
+                                                {% else %}
+                                                    <span class="text-muted">Independent</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {{ vote.timestamp|date:"M d, Y" }}<br>
+                                                <small class="text-muted">{{ vote.timestamp|time:"H:i" }}</small>
+                                            </td>
+                                            <td>
+                                                {% if vote.election.is_finished %}
+                                                    <span class="badge bg-success">Completed</span>
+                                                {% elif vote.election.is_ongoing %}
+                                                    <span class="badge bg-primary">Ongoing</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning text-dark">Upcoming</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm" role="group">
+                                                    <a href="{% url 'election_detail' vote.election.pk %}" 
+                                                       class="btn btn-outline-primary" title="View Election">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    {% if vote.election.is_finished %}
+                                                        <a href="{% url 'election_results' vote.election.pk %}" 
+                                                           class="btn btn-outline-success" title="View Results">
+                                                            <i class="fas fa-chart-pie"></i>
+                                                        </a>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-vote-yea fa-4x text-muted mb-3"></i>
+                            <h5 class="text-muted">No Voting History</h5>
+                            <p class="text-muted">You haven't cast any votes yet.</p>
+                            <a href="{% url 'election_list' %}" class="btn btn-primary">
+                                <i class="fas fa-search me-2"></i>Browse Elections
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control, .form-select {
+        border-radius: 8px;
+        border: 1px solid #ced4da;
+        padding: 0.75rem;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    }
+    
+    .card {
+        border-radius: 12px;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add form classes for Bootstrap styling
+    const formControls = document.querySelectorAll('input, select, textarea');
+    formControls.forEach(control => {
+        control.classList.add('form-control');
+    });
+});
+</script>
+{% endblock %}

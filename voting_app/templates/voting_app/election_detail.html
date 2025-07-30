@@ -1,0 +1,302 @@
+<!-- cspell:ignore elif truncatewords endfor forloop -->
+{% extends 'voting_app/base.html' %}
+
+{% block title %}{{ election.title }} - Online Voting System{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- Election Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h1 class="card-title mb-2">
+                                <i class="fas fa-vote-yea me-2"></i>{{ election.title }}
+                            </h1>
+                            <p class="card-text">{{ election.description }}</p>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            {% if election.is_ongoing %}
+                                <span class="badge bg-success fs-6 mb-2">
+                                    <i class="fas fa-circle me-1"></i>VOTING ACTIVE
+                                </span>
+                            {% elif election.is_upcoming %}
+                                <span class="badge bg-warning text-dark fs-6 mb-2">
+                                    <i class="fas fa-hourglass-half me-1"></i>UPCOMING
+                                </span>
+                            {% elif election.is_finished %}
+                                <span class="badge bg-secondary fs-6 mb-2">
+                                    <i class="fas fa-check-circle me-1"></i>COMPLETED
+                                </span>
+                            {% endif %}
+                            <div class="text-muted small">
+                                <div><i class="fas fa-calendar me-1"></i>Start: {{ election.start_time|date:"M d, Y H:i" }}</div>
+                                <div><i class="fas fa-calendar me-1"></i>End: {{ election.end_time|date:"M d, Y H:i" }}</div>
+                                <div><i class="fas fa-users me-1"></i>{{ election.total_votes }} vote{{ election.total_votes|pluralize }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Voting Section -->
+        <div class="col-lg-8">
+            {% if user_vote %}
+                <!-- Already Voted -->
+                <div class="card mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h4 class="mb-0">
+                            <i class="fas fa-check-circle me-2"></i>
+                            Vote Recorded
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-success d-flex align-items-center" role="alert">
+                            <i class="fas fa-info-circle me-3 fa-2x"></i>
+                            <div>
+                                <h5 class="alert-heading">Thank you for voting!</h5>
+                                <p class="mb-0">
+                                    You have successfully cast your vote for <strong>{{ user_vote.candidate.name }}</strong>
+                                    {% if user_vote.candidate.party %}({{ user_vote.candidate.party }}){% endif %}
+                                    on {{ user_vote.timestamp|date:"M d, Y \a\t H:i" }}.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            {% if election.is_finished %}
+                                <a href="{% url 'election_results' election.pk %}" class="btn btn-info">
+                                    <i class="fas fa-chart-pie me-2"></i>View Results
+                                </a>
+                            {% else %}
+                                <p class="text-muted">Results will be available after the election ends.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% elif can_vote %}
+                <!-- Voting Form -->
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">
+                            <i class="fas fa-vote-yea me-2"></i>
+                            Cast Your Vote
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted mb-4">
+                            Select your preferred candidate below. Once you submit your vote, it cannot be changed.
+                        </p>
+                        
+                        <form method="post" action="{% url 'cast_vote' election.pk %}" id="voteForm">
+                            {% csrf_token %}
+                            
+                            <div class="mb-4">
+                                {% for candidate in candidates %}
+                                    <div class="card mb-3 candidate-card" style="cursor: pointer;">
+                                        <div class="card-body">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" 
+                                                       name="candidate" value="{{ candidate.pk }}" 
+                                                       id="candidate_{{ candidate.pk }}" required>
+                                                <label class="form-check-label w-100" for="candidate_{{ candidate.pk }}">
+                                                    <div class="row align-items-center">
+                                                        <div class="col-md-2 text-center">
+                                                            {% if candidate.photo %}
+                                                                <img src="{{ candidate.photo.url }}" 
+                                                                     alt="{{ candidate.name }}" 
+                                                                     class="img-fluid rounded-circle" 
+                                                                     style="width: 80px; height: 80px; object-fit: cover;">
+                                                            {% else %}
+                                                                <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center text-white" 
+                                                                     style="width: 80px; height: 80px;">
+                                                                    <i class="fas fa-user fa-2x"></i>
+                                                                </div>
+                                                            {% endif %}
+                                                        </div>
+                                                        <div class="col-md-10">
+                                                            <h5 class="mb-1">{{ candidate.name }}</h5>
+                                                            {% if candidate.party %}
+                                                                <p class="mb-1 text-muted">
+                                                                    <i class="fas fa-flag me-1"></i>{{ candidate.party }}
+                                                                </p>
+                                                            {% endif %}
+                                                            {% if candidate.bio %}
+                                                                <p class="mb-0 small text-muted">{{ candidate.bio|truncatewords:20 }}</p>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-success btn-lg" id="submitVote">
+                                    <i class="fas fa-vote-yea me-2"></i>Submit Vote
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            {% elif election.is_upcoming %}
+                <!-- Election Not Started -->
+                <div class="card mb-4">
+                    <div class="card-body text-center">
+                        <i class="fas fa-hourglass-half fa-4x text-warning mb-3"></i>
+                        <h4>Election Not Started</h4>
+                        <p class="text-muted">
+                            This election will begin on {{ election.start_time|date:"M d, Y \a\t H:i" }}
+                        </p>
+                    </div>
+                </div>
+            {% elif election.is_finished %}
+                <!-- Election Ended -->
+                <div class="card mb-4">
+                    <div class="card-body text-center">
+                        <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
+                        <h4>Election Completed</h4>
+                        <p class="text-muted">
+                            This election ended on {{ election.end_time|date:"M d, Y \a\t H:i" }}
+                        </p>
+                        <a href="{% url 'election_results' election.pk %}" class="btn btn-info">
+                            <i class="fas fa-chart-pie me-2"></i>View Results
+                        </a>
+                    </div>
+                </div>
+            {% else %}
+                <!-- Election Inactive -->
+                <div class="card mb-4">
+                    <div class="card-body text-center">
+                        <i class="fas fa-ban fa-4x text-danger mb-3"></i>
+                        <h4>Voting Not Available</h4>
+                        <p class="text-muted">
+                            Voting is not currently available for this election.
+                        </p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Candidates List -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-users me-2"></i>Candidates
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for candidate in candidates %}
+                        <div class="d-flex align-items-center mb-3 {% if not forloop.last %}border-bottom pb-3{% endif %}">
+                            <div class="me-3">
+                                {% if candidate.photo %}
+                                    <img src="{{ candidate.photo.url }}" 
+                                         alt="{{ candidate.name }}" 
+                                         class="rounded-circle" 
+                                         style="width: 50px; height: 50px; object-fit: cover;">
+                                {% else %}
+                                    <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center text-white" 
+                                         style="width: 50px; height: 50px;">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">{{ candidate.name }}</h6>
+                                {% if candidate.party %}
+                                    <small class="text-muted">{{ candidate.party }}</small>
+                                {% endif %}
+                                {% if election.is_finished or user.is_staff %}
+                                    <div class="mt-1">
+                                        <small class="text-info">
+                                            <i class="fas fa-chart-bar me-1"></i>
+                                            {{ candidate.vote_count }} vote{{ candidate.vote_count|pluralize }}
+                                        </small>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% empty %}
+                        <p class="text-muted text-center">No candidates available.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Election Statistics -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>Statistics
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="border-end">
+                                <h4 class="text-primary">{{ candidates|length }}</h4>
+                                <small class="text-muted">Candidate{{ candidates|length|pluralize }}</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-success">{{ election.total_votes }}</h4>
+                            <small class="text-muted">Vote{{ election.total_votes|pluralize }} Cast</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .candidate-card {
+        transition: all 0.2s;
+        border: 2px solid transparent;
+    }
+    .candidate-card:hover {
+        border-color: #0d6efd;
+        transform: translateY(-2px);
+    }
+    .form-check-input:checked + .form-check-label .candidate-card {
+        border-color: #198754;
+        background-color: #f8f9fa;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Make candidate cards clickable
+    const candidateCards = document.querySelectorAll('.candidate-card');
+    candidateCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const radio = this.querySelector('input[type="radio"]');
+            if (radio) {
+                radio.checked = true;
+            }
+        });
+    });
+
+    // Vote confirmation
+    const voteForm = document.getElementById('voteForm');
+    if (voteForm) {
+        voteForm.addEventListener('submit', function(e) {
+            const selectedCandidate = document.querySelector('input[name="candidate"]:checked');
+            if (selectedCandidate) {
+                const candidateName = selectedCandidate.closest('.card-body').querySelector('h5').textContent;
+                if (!confirm(`Are you sure you want to vote for ${candidateName}? This action cannot be undone.`)) {
+                    e.preventDefault();
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

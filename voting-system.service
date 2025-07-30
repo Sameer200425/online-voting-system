@@ -1,0 +1,17 @@
+# cspell:ignore Gunicorn venv gunicorn wsgi MAINPID
+[Unit]
+Description=Gunicorn instance to serve Online Voting System
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/voting_system
+Environment="PATH=/var/www/voting_system/venv/bin"
+EnvironmentFile=/var/www/voting_system/.env
+ExecStart=/var/www/voting_system/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:8000 online_voting_system.wsgi:application
+ExecReload=/bin/kill -s HUP $MAINPID
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
