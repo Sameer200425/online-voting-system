@@ -1,5 +1,5 @@
 # Deployment Guide for Django Online Voting System
-<!-- cspell:ignore venv psycopg gunicorn whitenoise decouple systemctl nginx certbot -->
+<!-- cspell:ignore venv psycopg gunicorn whitenoise decouple systemctl nginx certbot runserver psql createsuperuser collectstatic wsgi logfile Procfile journalctl -->
 
 ## Overview
 
@@ -75,6 +75,7 @@ python manage.py runserver 0.0.0.0:8000
 #### Step 3.1: Server Setup
 
 **For Ubuntu/Linux Server:**
+
 ```bash
 # Update system
 sudo apt update && sudo apt upgrade -y
@@ -161,6 +162,7 @@ sudo nano /etc/systemd/system/voting_system.service
 ```
 
 **Service file content:**
+
 ```ini
 [Unit]
 Description=Gunicorn instance to serve voting_system
@@ -193,6 +195,7 @@ sudo nano /etc/nginx/sites-available/voting_system
 ```
 
 **Nginx configuration:**
+
 ```nginx
 server {
     listen 80;

@@ -1,0 +1,41 @@
+{
+  "_comment": "cspell:ignore buildpacks postgresql heroku",
+  "name": "Django Online Voting System",
+  "description": "Complete Django-based online voting system with admin panel and production deployment",
+  "repository": "https://github.com/Sameer200425/online-voting-system",
+  "keywords": ["django", "voting", "election", "python", "postgresql"],
+  "env": {
+    "SECRET_KEY": {
+      "description": "A secret key for verifying the integrity of signed cookies.",
+      "generator": "secret"
+    },
+    "DEBUG": {
+      "description": "Debug mode for Django",
+      "value": "False"
+    },
+    "DJANGO_SETTINGS_MODULE": {
+      "description": "Django settings module",
+      "value": "online_voting_system.settings_heroku"
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1
+    }
+  },
+  "addons": [
+    "heroku-postgresql:essential-0"
+  ],
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ],
+  "environments": {
+    "test": {
+      "scripts": {
+        "test": "python manage.py test"
+      }
+    }
+  }
+}

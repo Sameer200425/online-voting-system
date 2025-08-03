@@ -1,3 +1,4 @@
+# cspell:ignore pycache sdist staticfiles venv ehthumbs
 # Python
 __pycache__/
 *.py[cod]

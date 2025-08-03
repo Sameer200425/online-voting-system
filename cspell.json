@@ -1,0 +1,42 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "words": [
+    "buildpacks",
+    "postgresql",
+    "heroku",
+    "gunicorn",
+    "wsgi",
+    "venv",
+    "psycopg",
+    "whitenoise",
+    "decouple",
+    "systemctl",
+    "nginx",
+    "certbot",
+    "runserver",
+    "psql",
+    "createsuperuser",
+    "collectstatic",
+    "logfile",
+    "Procfile",
+    "journalctl",
+    "pycache",
+    "sdist",
+    "staticfiles",
+    "ehthumbs",
+    "winget",
+    "SAMEER",
+    "Sameer",
+    "nostatic",
+    "noinput",
+    "decouple"
+  ],
+  "ignorePaths": [
+    "node_modules/**",
+    ".git/**",
+    ".venv/**",
+    "staticfiles/**",
+    "**/__pycache__/**"
+  ]
+}
