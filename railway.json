@@ -1,0 +1,33 @@
+{
+  "name": "Django Online Voting System",
+  "description": "A comprehensive online voting system built with Django",
+  "image": "heroku/python",
+  "addons": ["postgresql"],
+  "env": {
+    "DJANGO_SETTINGS_MODULE": {
+      "description": "Django settings module for production",
+      "value": "online_voting_system.settings_heroku"
+    },
+    "DEBUG": {
+      "description": "Debug mode - should be False in production",
+      "value": "False"
+    },
+    "SECRET_KEY": {
+      "description": "Django secret key for security",
+      "value": "y5(^3e(&@49q2zmo_=c-h@9mopi+xcj_(@d3)_3z5a(8@t2ass"
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1
+    }
+  },
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ],
+  "scripts": {
+    "postdeploy": "python manage.py migrate && python manage.py collectstatic --noinput"
+  }
+}
